@@ -1,19 +1,7 @@
-from .. import Hero
+from dota2.dota2 import Heroes
 
-
-sniper = Hero.Hero(
-    name='sniper', base_strength=19, base_agility=27, base_intelligence=15, base_armor=-1,
-    base_att_speed=100, base_min_att_damage=19, base_max_att_damage=25, str_per_lvl=2,
-    agi_per_lvl=3.2, int_per_lvl=2.6, cur_lvl=0, hero_type='agility'
-)
-
-
-slardar = Hero.Hero(
-    name='slardar', base_strength=21, base_agility=17, base_intelligence=15, base_armor=3,
-    base_att_speed=100, base_min_att_damage=30, base_max_att_damage=38, str_per_lvl=3.6,
-    agi_per_lvl=2.4, int_per_lvl=1.5, cur_lvl=0, hero_type='strength'
-)
-
+sniper = Heroes.heroes['Sniper']
+slardar = Heroes.heroes['Slardar']
 
 def assert_status_at_levels(hero, method, data, round_pre=None):
     # Health at level 1, 5, 10, 15, 20, 25, 30
@@ -66,7 +54,8 @@ def test_slardar_mana():
 def test_sniper_attack_damage():
     # Self calculated target values
     # Attack damage at level 1, 5, 10, 15, 20, 25, 30
-    data = [(1, [[1, 49]]), (15, [[1, 94]]), (25, [[1, 138]]), (30, [[1, 156]])]
+    print(sniper)
+    data = [(1, [[1, 43]]), (15, [[1, 88]]), (25, [[1, 132]]), (30, [[1, 150]])]
     assert_status_at_levels(sniper, sniper.get_attack_damage, data)
 
 
@@ -103,3 +92,41 @@ def test_slardar_attacks_per_second():
     # Attacks per second at level 1, 5, 10, 15, 20, 25, 30
     data = [(1, 0.688), (15, 0.888), (25, 1.1), (30, 1.182)]
     assert_status_at_levels(slardar, slardar.get_attacks_per_sec, data, round_pre=3)
+
+
+def test_all_heores_health():
+    for name, hero in Heroes.heroes.items():
+        for assertion in ['health_1', 'health_15', 'health_25', 'health_30']:
+            hero.set_level(int(assertion.split('_')[1]))
+            print(f'Hero = {hero.name}')
+            assert int(hero.assertions[assertion]) - 20 <= hero.get_health() <= int(hero.assertions[assertion]) + 20
+
+
+def test_all_heores_mana():
+    for name, hero in Heroes.heroes.items():
+        for assertion in ['mana_1', 'mana_15', 'mana_25', 'mana_30']:
+            hero.set_level(int(assertion.split('_')[1]))
+            print(f'Hero = {hero.name}')
+            assert int(hero.assertions[assertion]) - 12 <= hero.get_mana() <= int(hero.assertions[assertion]) + 12
+
+
+def test_all_heores_att_per_sec():
+    for name, hero in Heroes.heroes.items():
+        for assertion in [
+            'attacks_per_second_1', 'attacks_per_second_15', 'attacks_per_second_25', 'attacks_per_second_30'
+        ]:
+            hero.set_level(int(assertion.split('_')[3]))
+            print(f'Hero = {hero.name}')
+            assert float(hero.assertions[assertion]) - 0.1 \
+                   <= round(hero.get_attacks_per_sec(), 2) \
+                   <= float(hero.assertions[assertion]) + 0.1
+
+
+def test_all_heores_armor():
+    for name, hero in Heroes.heroes.items():
+        for assertion in ['armor_1', 'armor_15', 'armor_25', 'armor_30']:
+            hero.set_level(int(assertion.split('_')[1]))
+            print(f'Hero = {hero.name}')
+            assert float(hero.assertions[assertion]) - 0.1 \
+                   <= round(hero.get_armor(), 2) \
+                   <= float(hero.assertions[assertion]) + 0.1

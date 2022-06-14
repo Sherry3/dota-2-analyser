@@ -1,18 +1,35 @@
 import math
 import random
+import json
 
-from .items import items
-from .special_effects import special_effects
-from .constants import *
+from dota2.dota2.items import items
+from dota2.dota2.special_effects import special_effects
+from dota2.dota2 import constants
 
 
 class Hero:
-    def __init__(
-        self, base_strength=0, base_agility=0, base_intelligence=0, base_armor=0, base_att_speed=0,
-        base_min_att_damage=0, base_max_att_damage=0, str_per_lvl=0, agi_per_lvl=0, int_per_lvl=0,
-        cur_lvl=0, hero_type=None, bat=1.7, active_items=None, active_effects=None, name='',
-        spell_resistance=0
-    ):
+    def __init__(self, file=None, active_items=None, active_effects=None):
+        if file is not None:
+            with open(file, 'r') as f:
+                data = json.loads(''.join(f.readlines()))
+                self.name = data['name']
+                self.base_strength = float(data['base_strength'])
+                self.base_agility = float(data['base_agility'])
+                self.base_intelligence = float(data['base_intelligence'])
+                self.base_armor = float(data['base_armor'])
+                self.base_att_speed = float(data['base_att_speed'])
+                self.base_min_att_damage = float(data['base_min_att_damage'])
+                self.base_max_att_damage = float(data['base_max_att_damage'])
+                self.str_per_lvl = float(data['str_per_lvl'])
+                self.agi_per_lvl = float(data['agi_per_lvl'])
+                self.int_per_lvl = float(data['int_per_lvl'])
+                self.cur_lvl = 1
+                self.hero_type = data['hero_type']
+                self.bat = float(data['bat'])
+                self.magic_resistance = float(data['magic_resistance'])/100
+                self.status_resistance = float(data['status_resistance'])/100
+                self.assertions = data['assertions']
+
         if active_items is None:
             self.active_items = []
         else:
@@ -24,6 +41,12 @@ class Hero:
 
         self.bonus_attrs = {17: 2, 18: 2, 19: 4, 20: 4, 21: 6, 22: 8, 23: 10, 24: 12, 25: 12}
 
+    def overwrite(
+        self, base_strength=0, base_agility=0, base_intelligence=0, base_armor=0, base_att_speed=100,
+        base_min_att_damage=0, base_max_att_damage=0, str_per_lvl=0, agi_per_lvl=0, int_per_lvl=0,
+        cur_lvl=0, hero_type=None, bat=1.7, magic_resistance=0.25, status_resistance=0, name='',
+        active_items=None, active_effects=None
+    ):
         self.name = name
         self.base_strength = base_strength
         self.base_agility = base_agility
@@ -38,7 +61,16 @@ class Hero:
         self.cur_lvl = cur_lvl
         self.hero_type = hero_type
         self.bat = bat
-        self.spell_resistance = spell_resistance
+        self.magic_resistance = magic_resistance
+
+        if active_items is None:
+            self.active_items = []
+        else:
+            self.active_items = active_items
+        if active_effects is None:
+            self.active_effects = []
+        else:
+            self.active_effects = active_effects
 
     def set_level(self, level):
         self.cur_lvl = level
@@ -54,50 +86,53 @@ class Hero:
         return self.bonus_attrs[self.cur_lvl]
 
     def get_health(self):
-        cur_health = base_health
+        cur_health = constants.base_health
+        print(f'cur_health 1 = {cur_health}')
         bonus_strength = self.get_bonus_attr()
         cur_health += round(
             (self.str_per_lvl*(self.cur_lvl-1))+self.base_strength+bonus_strength
-        ) * health_per_strength
+        ) * constants.health_per_strength
+        print(f'cur_health 2 = {cur_health}')
 
         for item in self.active_items:
             if item not in items:
                 continue
             item = items[item]
             if 'strength' in item:
-                cur_health += health_per_strength * item['strength']
+                cur_health += constants.health_per_strength * item['strength']
             if 'health' in item:
                 cur_health += item['health']
 
         return cur_health
 
     def get_mana(self):
-        cur_mana = base_mana
+        cur_mana = constants.base_mana
         bonus_int = self.get_bonus_attr()
-        cur_mana += (round((self.int_per_lvl*(self.cur_lvl-1))+self.base_intelligence+bonus_int)) * mana_per_int
+        cur_mana += (round((self.int_per_lvl*(self.cur_lvl-1))+self.base_intelligence+bonus_int)) * constants.mana_per_int
 
         for item in self.active_items:
             if item not in items:
                 continue
             item = items[item]
             if 'intelligence' in item:
-                cur_mana += mana_per_int * item['intelligence']
+                cur_mana += constants.mana_per_int * item['intelligence']
             if 'mana' in item:
                 cur_mana += item['mana']
 
         return cur_mana
 
+    # TODO: Check whether this calculation is correct or not
     def get_armor(self):
         cur_armor = self.base_armor
         bonus_agility = self.get_bonus_attr()
-        cur_armor += (round((self.agi_per_lvl*(self.cur_lvl-1))+self.base_agility+bonus_agility, 2)) * armor_per_agility
+        cur_armor += (round((self.agi_per_lvl*(self.cur_lvl-1))+self.base_agility+bonus_agility, 2)) * constants.armor_per_agility
 
         for item in self.active_items:
             if item not in items:
                 continue
             item = items[item]
             if 'agility' in item:
-               cur_armor += armor_per_agility * item['agility']
+               cur_armor += constants.armor_per_agility * item['agility']
             if 'armor' in item:
                cur_armor += item['armor']
 
@@ -169,6 +204,7 @@ class Hero:
 
         return cur_damages
 
+    # TODO: Check whether this calculation is correct or not
     def get_attack_speed(self):
         cur_attack_speed = self.base_att_speed
         bonus_agility = self.get_bonus_attr()
@@ -192,16 +228,13 @@ class Hero:
 
     def get_physical_damage_taken(self, physical_damage):
         total_damage = physical_damage
-        print('total_damage', total_damage)
         armor = self.get_armor()
-        print('armor', armor)
-        damage_multiplier = 1 - (armor_damage_factor * armor)/(1+(armor_damage_factor * abs(armor)))
-        print('damage_multiplier', damage_multiplier)
+        damage_multiplier = 1 - (constants.armor_damage_factor * armor)/(1+(constants.armor_damage_factor * abs(armor)))
         return total_damage * damage_multiplier
 
     def get_magical_damage_taken(self, magical_damage):
         total_damage = magical_damage
-        total_damage = total_damage * (1-self.spell_resistance)
+        total_damage = total_damage * (1-self.magic_resistance)
         return total_damage
 
     def get_required_attacks_to_finish(self, opponent):
@@ -216,3 +249,24 @@ class Hero:
         num_attacks = self.get_required_attacks_to_finish(opponent)
         time_in_secs = num_attacks/self.get_attacks_per_sec()
         return time_in_secs
+
+    def __str__(self):
+        return str({
+            'name': self.name,
+            'hero_type': self.hero_type,
+            'base_strength': self.base_strength,
+            'base_agility': self.base_agility,
+            'base_intelligence': self.base_intelligence,
+            'base_armor': self.base_armor,
+            'base_att_speed': self.base_att_speed,
+            'base_min_att_damage': self.base_min_att_damage,
+            'base_max_att_damage': self.base_max_att_damage,
+            'str_per_lvl': self.str_per_lvl,
+            'agi_per_lvl': self.agi_per_lvl,
+            'int_per_lvl': self.int_per_lvl,
+            'cur_lvl': self.cur_lvl,
+            'bat': self.bat,
+            'magic_resistance': self.magic_resistance,
+            'active_items': self.active_items,
+            'active_effects': self.active_effects,
+        })
