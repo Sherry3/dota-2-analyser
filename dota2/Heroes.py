@@ -7,6 +7,7 @@ for hero_name in strength_heroes + agility_heores + intelligence_heroes:
     heroes[hero_name] = Hero(file=f'Heroes_data/{hero_name}.json')
 
 '''
+# Old manual way of creating Heroes.
 abaddon = Hero(
     name='Abaddon', hero_type='strength',
     base_strength=22, base_agility=23, base_intelligence=18,
