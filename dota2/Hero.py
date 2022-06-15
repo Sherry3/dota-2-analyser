@@ -87,12 +87,10 @@ class Hero:
 
     def get_health(self):
         cur_health = constants.base_health
-        print(f'cur_health 1 = {cur_health}')
         bonus_strength = self.get_bonus_attr()
         cur_health += round(
             (self.str_per_lvl*(self.cur_lvl-1))+self.base_strength+bonus_strength
         ) * constants.health_per_strength
-        print(f'cur_health 2 = {cur_health}')
 
         for item in self.active_items:
             if item not in items:
@@ -239,7 +237,6 @@ class Hero:
 
     def get_required_attacks_to_finish(self, opponent):
         probability, attack_damage = map(list, zip(*self.get_attack_damage()))
-        print(attack_damage, probability)
         mean_damage = sum(random.choices(attack_damage, probability, k=10000))/10000
         damage_per_attack = opponent.get_physical_damage_taken(mean_damage)
         num_attacks = math.ceil(opponent.get_health()/damage_per_attack)
@@ -248,7 +245,7 @@ class Hero:
     def get_required_time_to_finish(self, opponent):
         num_attacks = self.get_required_attacks_to_finish(opponent)
         time_in_secs = num_attacks/self.get_attacks_per_sec()
-        return time_in_secs
+        return round(time_in_secs, 3)
 
     def __str__(self):
         return str({
