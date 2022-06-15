@@ -1,6 +1,7 @@
-import requests
 import json
+import requests
 from lxml import etree
+
 from dota2.constants import strength_heroes, agility_heores, intelligence_heroes
 
 xpathselectors = {
