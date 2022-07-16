@@ -167,12 +167,12 @@ def test_get_physical_damage_taken_1():
     data = [(-40, 586.21), (-30, 608.7), (-20, 647.06), (-10, 727.27)]
     for i in data:
         test_hero.overwrite(base_armor=i[0])
-        assert 1000 == round(test_hero.get_physical_damage_taken(i[1]), 0)
+        assert 1000 == round(test_hero.get_physical_damage_taken(i[1], []), 0)
 
     data = [(0, 1000), (10, 1600), (20, 2200), (30, 2800), (40, 3400)]
     for i in data:
         test_hero.overwrite(base_armor=i[0])
-        assert 1000 == round(test_hero.get_physical_damage_taken(i[1]), 0)
+        assert 1000 == round(test_hero.get_physical_damage_taken(i[1], []), 0)
 
 
 # TODO: Check it's correctness

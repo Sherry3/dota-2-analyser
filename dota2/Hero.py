@@ -41,6 +41,26 @@ class Hero:
 
         self.bonus_attrs = {17: 2, 18: 2, 19: 4, 20: 4, 21: 6, 22: 8, 23: 10, 24: 12, 25: 12}
 
+    def add_active_item(self, new_item):
+        self.active_items.append(new_item)
+
+    def remove_active_item(self, remove_item):
+        for index, item in enumerate(self.active_items):
+            if item == remove_item:
+                del self.active_items[index]
+                return True
+        return False
+
+    def add_special_effect(self, new_special_effect):
+        self.active_effects.append(new_special_effect)
+
+    def remove_special_effect(self, remove_special_effect):
+        for index, special_effect in enumerate(self.active_effects):
+            if special_effect == remove_special_effect:
+                del self.active_effects[index]
+                return True
+        return False
+
     def overwrite(
         self, base_strength=0, base_agility=0, base_intelligence=0, base_armor=0, base_att_speed=100,
         base_min_att_damage=0, base_max_att_damage=0, str_per_lvl=0, agi_per_lvl=0, int_per_lvl=0,
@@ -136,6 +156,19 @@ class Hero:
 
         return cur_armor
 
+    # TODO: Check whether this calculation is correct or not
+    def get_magic_resistance(self):
+        magic_resistance = self.magic_resistance
+
+        for item in self.active_items:
+            if item not in items:
+                continue
+            item = items[item]
+            if 'magic_resistance' in item:
+               magic_resistance *= item['magic_resistance']
+
+        return magic_resistance
+
     def get_attack_damage(self):
         cur_damages = [[1, (self.base_min_att_damage+self.base_max_att_damage)/2]]
         bonus_attr = self.get_bonus_attr()
@@ -202,6 +235,25 @@ class Hero:
 
         return cur_damages
 
+    def get_magical_attack_damage(self):
+        cur_damages = [[1, 0]]
+
+        for item in self.active_items:
+            if item not in items:
+                continue
+            item = items[item]
+            if 'magical_damage' in item:
+                cur_damages[0][1] += item['magical_damage']
+
+        for special_effect in self.active_effects:
+            if special_effect not in special_effects:
+                continue
+            special_effect = special_effects[special_effect]
+            if 'magical_damage' in special_effect:
+                cur_damages[0][1] += special_effect['magical_damage']
+
+        return cur_damages
+
     # TODO: Check whether this calculation is correct or not
     def get_attack_speed(self):
         cur_attack_speed = self.base_att_speed
@@ -224,22 +276,32 @@ class Hero:
         cur_attack_speed = self.get_attack_speed()/(self.bat*100)
         return cur_attack_speed
 
-    def get_physical_damage_taken(self, physical_damage):
+    def get_physical_damage_taken(self, physical_damage, items):
         total_damage = physical_damage
         armor = self.get_armor()
+
+        for item in items:
+            if 'armor_corruption' in items[item]:
+                armor -= items[item]['armor_corruption']
+
         damage_multiplier = 1 - (constants.armor_damage_factor * armor)/(1+(constants.armor_damage_factor * abs(armor)))
         return total_damage * damage_multiplier
 
     def get_magical_damage_taken(self, magical_damage):
         total_damage = magical_damage
-        total_damage = total_damage * (1-self.magic_resistance)
+        total_damage = total_damage * (1-self.get_magic_resistance())
         return total_damage
 
     def get_required_attacks_to_finish(self, opponent):
         probability, attack_damage = map(list, zip(*self.get_attack_damage()))
         mean_damage = sum(random.choices(attack_damage, probability, k=10000))/10000
-        damage_per_attack = opponent.get_physical_damage_taken(mean_damage)
-        num_attacks = math.ceil(opponent.get_health()/damage_per_attack)
+
+        probability, magical_attack_damage = map(list, zip(*self.get_magical_attack_damage()))
+        mean_magical_damage = sum(random.choices(magical_attack_damage, probability, k=10000))/10000
+
+        damage_per_attack = opponent.get_physical_damage_taken(mean_damage, self.active_items)
+        magical_damage_per_attack = opponent.get_magical_damage_taken(mean_magical_damage)
+        num_attacks = math.ceil(opponent.get_health()/(damage_per_attack + magical_damage_per_attack))
         return num_attacks
 
     def get_required_time_to_finish(self, opponent):

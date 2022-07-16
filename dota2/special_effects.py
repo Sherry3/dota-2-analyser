@@ -9,4 +9,16 @@ special_effects = {
     'agility': 1000,
     'damage': 50,
   },
+
+  # Start from here
+  'head_shot_lvl_1': {
+    'critical_hit_multiplier': 3,
+    'critical_hit_chance': 0.3,
+  },
+
+  # bash not working yet
+  'bash_lvl_1': {
+    'critical_hit_damage': 1000,
+    'critical_hit_chance': 0.25,
+  },
 }
