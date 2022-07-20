@@ -254,6 +254,7 @@ items = {
   },
   'mask_of_madness_activated': {
     'price': 1775,
+    'active_duration': 6,
     'attack_speed': 120,
     'damage': 10,
     'armor': -8,
@@ -451,7 +452,7 @@ items = {
     'damage_reflection_percent': 0.2,
     'damage_reflection': 20,
   },
-  'blade_mail_active': {
+  'blade_mail_activated': {
     'price': 2100,
     'active_duration': 4.5,
     'damage_reflection_percent': 0.8,
