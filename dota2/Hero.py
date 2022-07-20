@@ -276,11 +276,11 @@ class Hero:
         cur_attack_speed = self.get_attack_speed()/(self.bat*100)
         return cur_attack_speed
 
-    def get_physical_damage_taken(self, physical_damage, items):
+    def get_physical_damage_taken(self, physical_damage, active_items):
         total_damage = physical_damage
         armor = self.get_armor()
 
-        for item in items:
+        for item in active_items:
             if 'armor_corruption' in items[item]:
                 armor -= items[item]['armor_corruption']
 
