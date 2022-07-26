@@ -474,8 +474,8 @@ items = {
   },
   'assault_cuirass': {
     'price': 5125,
-    'attack_speed': 30,
-    'armor': 10,
+    'attack_speed': 60,
+    'armor': 15,
     'armor_corruption': 5,
   },
   'shivas_guard': {
