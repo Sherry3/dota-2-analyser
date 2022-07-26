@@ -13,6 +13,9 @@ items = {
     'critical_hit_chance': 0.2,
     'attack_speed': 500,
   },
+  'armor_corruption': {
+    'armor_corruption': 10,
+  },
   'iron_branch': {
     'price': 50,
     'strength': 1,
@@ -468,6 +471,29 @@ items = {
     'price': 3500,
     'damage': 50,
     'armor_corruption': 6,
+  },
+  'assault_cuirass': {
+    'price': 5125,
+    'attack_speed': 30,
+    'armor': 10,
+    'armor_corruption': 5,
+  },
+  'shivas_guard': {
+    'price': 4850,
+    'intelligence': 30,
+    'armor': 15,
+    'attack_speed_corruption': 45,
+  },
+  'heart_of_tarrasque': {
+    'price': 5000,
+    'strength': 45,
+    'health': 250,
+  },
+  'daedalus': {
+    'price': 5150,
+    'damage': 88,
+    'critical_hit_multiplier': 2.25,
+    'critical_hit_chance': 0.3,
   },
 }
 
